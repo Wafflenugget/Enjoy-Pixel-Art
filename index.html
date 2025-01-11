@@ -4,14 +4,199 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Art Tool</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Styling for the main layout */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: url('https://media.istockphoto.com/id/1203234262/photo/valentine-paper-pack.webp?a=1&b=1&s=612x612&w=0&k=20&c=41lEr-1tpvvLFPjPjTHH_toVG5Fr205pNh_UM22HyRU=');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Pixel canvas styling */
+    #pixelCanvas {
+      display: grid;
+      grid-template-columns: repeat(16, 20px);
+      gap: 1px;
+      margin-bottom: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .pixel {
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    /* Theme Spinner and buttons layout */
+    #themeSpinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    #spinButton, #clearButton, #doneButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #spinButton {
+      background-color: #ffcc00;
+    }
+
+    #spinButton:hover {
+      background-color: #ffaa00;
+    }
+
+    #clearButton {
+      background-color: #ff6347;
+      color: white;
+    }
+
+    #clearButton:hover {
+      background-color: #ff4500;
+    }
+
+    #doneButton {
+      background-color: #32cd32;
+      color: white;
+    }
+
+    #doneButton:hover {
+      background-color: #228b22;
+    }
+
+    #colorPicker {
+      border: none;
+      height: 40px;
+      width: 40px;
+      cursor: pointer;
+    }
+
+    #themeResult {
+      font-weight: bold;
+      margin-top: 5px;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-  <div id="toolbar">
-    <input type="color" id="colorPicker" value="#ff0000">
-    <button id="clearButton">Clear Canvas</button>
-  </div>
+  <!-- Pixel Canvas -->
   <div id="pixelCanvas"></div>
-  <script src="script.js"></script>
+
+  <!-- Toolbar with Buttons -->
+  <div id="themeSpinner">
+    <button id="clearButton">🧹 Clear Canvas</button>
+    <div>
+      <h3>Out of Ideas? Spin to Get a Theme!</h3>
+      <button id="spinButton">🎡 Spin the Wheel</button>
+      <p id="themeResult"></p>
+    </div>
+    <input type="color" id="colorPicker" value="#ff0000">
+    <button id="doneButton">✔️ Done</button>
+  </div>
+
+  <script>
+    // Pixel Art Functionality
+    const pixelCanvas = document.getElementById('pixelCanvas');
+    const colorPicker = document.getElementById('colorPicker');
+    const clearButton = document.getElementById('clearButton');
+    const doneButton = document.getElementById('doneButton');
+
+    // Create a 16x16 grid
+    const createCanvas = (size) => {
+      pixelCanvas.innerHTML = ''; // Clear previous grid
+      pixelCanvas.style.gridTemplateColumns = `repeat(${size}, 20px)`;
+      pixelCanvas.style.gridTemplateRows = `repeat(${size}, 20px)`;
+
+      for (let i = 0; i < size * size; i++) {
+        const pixel = document.createElement('div');
+        pixel.classList.add('pixel');
+        pixel.addEventListener('click', () => {
+          pixel.style.backgroundColor = colorPicker.value;
+        });
+        pixelCanvas.appendChild(pixel);
+      }
+    };
+
+    // Clear canvas by resetting pixel colors
+    clearButton.addEventListener('click', () => {
+      document.querySelectorAll('.pixel').forEach(pixel => {
+        pixel.style.backgroundColor = 'white';
+      });
+    });
+
+    // Initialize the canvas
+    createCanvas(16);
+
+    // Export pixel art as an image
+    doneButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      const size = 16; // Grid size
+      const pixelSize = 20; // Pixel size
+
+      canvas.width = size * pixelSize;
+      canvas.height = size * pixelSize;
+      const ctx = canvas.getContext('2d');
+
+      // Draw each pixel onto the canvas
+      const pixels = document.querySelectorAll('.pixel');
+      pixels.forEach((pixel, index) => {
+        const x = (index % size) * pixelSize;
+        const y = Math.floor(index / size) * pixelSize;
+        const color = window.getComputedStyle(pixel).backgroundColor;
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, pixelSize, pixelSize);
+      });
+
+      // Download the image
+      const link = document.createElement('a');
+      link.download = 'pixel_art.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // Theme Spinner Functionality
+    const themes = [
+      "Underwater World",
+      "Space Adventure",
+      "Pixel Pet",
+      "Magical Forest",
+      "Retro Video Game",
+      "Sunny Beach Day",
+      "Fantasy Castle",
+      "Robot City",
+      "Wild Jungle",
+      "Outer Galaxy"
+    ];
+
+    const spinButton = document.getElementById('spinButton');
+    const themeResult = document.getElementById('themeResult');
+
+    // Spin to get a theme
+    spinButton.addEventListener('click', () => {
+      const randomIndex = Math.floor(Math.random() * themes.length);
+      const selectedTheme = themes[randomIndex];
+      themeResult.textContent = `Your theme is: "${selectedTheme}"!`;
+    });
+  </script>
 </body>
 </html>
